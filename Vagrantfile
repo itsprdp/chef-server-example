@@ -1,5 +1,5 @@
 
-st_cache_path = File.expand_path("../.cache", __FILE__)
+host_cache_path = File.expand_path("../.cache", __FILE__)
 guest_cache_path = "/tmp/vagrant-cache"
 
 # ensure the cache path exists
