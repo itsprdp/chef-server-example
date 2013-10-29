@@ -1,50 +1,40 @@
+# -*- mode: ruby -*- 
+# vi: set ft=ruby :
 
-host_cache_path = File.expand_path("../.cache", __FILE__)
-guest_cache_path = "/tmp/vagrant-cache"
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing! 
+VAGRANTFILE_API_VERSION = "2" 
 
-# ensure the cache path exists
-FileUtils.mkdir(host_cache_path) unless File.exist?(host_cache_path)
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.berkshelf.enabled = true
+  config.omnibus.chef_version = :latest
 
-Vagrant::Config.run do |config|
+  config.vm.box = "precise64"
+  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
-  config.vm.define :chef do |chef_config|
-    config.vm.customize ["modifyvm", :id, "--cpus", 2]
-    config.vm.customize ["modifyvm", :id, "--memory", 1024]
+  config.vm.provider :virtualbox do |provider|
+    provider.customize ["modifyvm", :id, "--memory", "512"]
+  end
 
-    chef_config.vm.box = "precise64"
-    chef_config.vm.network :hostonly, "10.33.33.33"
-    chef_config.vm.share_folder "cache", guest_cache_path, host_cache_path
 
-    chef_config.ssh.max_tries = 40
-    chef_config.ssh.timeout   = 120
-
-    VAGRANT_JSON = JSON.parse(Pathname(__FILE__).dirname.join('nodes', 'vagrant.json').read)
+  config.vm.define :chef_server_node do |chef_config|
+    chef_config.vm.network :private_network, ip: "10.33.33.33"
+    chef_config.vm.network :forwarded_port, guest: 80, host: 8000
+    chef_config.vm.network :forwarded_port, guest: 443, host: 8443
+    chef_config.vm.hostname = 'chef.itsprdp.com'
 
     chef_config.vm.provision :chef_solo do |chef|
        chef.cookbooks_path = ["site-cookbooks", "cookbooks"]
        chef.roles_path = "roles"
        chef.data_bags_path = "data_bags"
-       chef.provisioning_path = guest_cache_path
+       chef.log_level = :debug
 
-       chef.run_list = VAGRANT_JSON.delete('run_list')
-       chef.json = VAGRANT_JSON
-       # old way
-       #VAGRANT_JSON['run_list'].each do |recipe|
-       # chef.add_recipe(recipe)
-       #end if VAGRANT_JSON['run_list']
-
-       Dir.glob(Pathname(__FILE__).dirname.join('roles', '*.json')).each do |role|
-        chef.add_role(Pathname.new(role).basename(".*").to_s)
-       end
+       chef.add_role "chef"
     end
   end
 
-  config.vm.define :chef_client do |chef_client_config|
-    chef_client_config.vm.box = "precise64"
-    chef_client_config.vm.network :hostonly, "10.33.33.50"
-
-    chef_client_config.ssh.max_tries = 40
-    chef_client_config.ssh.timeout   = 120
+  config.vm.define :chef_client_node do |chef_client_config|
+    chef_client_config.vm.network :private_network, ip: "10.33.33.50"
+    chef_client_config.vm.hostname = 'node.itsprdp.com'
   end
-end
 
+end 
