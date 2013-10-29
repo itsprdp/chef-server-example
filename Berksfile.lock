@@ -1,0 +1,9 @@
+{
+  "sources": {
+    "chef-server": {
+      "locked_version": "2.0.0",
+      "git": "git://github.com/opscode-cookbooks/chef-server.git",
+      "ref": "85eb157f974957f657f6f3b71db584bfb71dc4e5"
+    }
+  }
+}
