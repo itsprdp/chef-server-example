@@ -7,4 +7,4 @@ validation_key           '/etc/chef-server/chef-validator.pem'
 chef_server_url          'https://chef.itsprdp.com'
 syntax_check_cache_path  '/home/itsprdp/chef-server-example/.chef/syntax_check_cache'
 cookbook_path            [ './cookbooks', './site-cookbooks' ]
-
+knife[:editor]="vim"
