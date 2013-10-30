@@ -1,0 +1,11 @@
+{
+  "name" : "web.node",
+  "default_attributes":{
+  },
+  "json_class": "Chef::Role",
+  "chef_type": "node",
+  "json_class": "Chef::Node",
+  "run_list": ["recipe[nginx]"
+     
+  ]
+}
